@@ -22,20 +22,20 @@ export default class Index extends React.Component {
               "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
               "Helvetica Neue", sans-serif;
             margin: 0;
+            background-color: #000;
           }
           * {
             box-sizing: border-box;
           }
         `}</style>
-        {this.state.hasDicomdir ? (
-          <DicomViewer dicomdir={this.dicomdir} />
-        ) : (
-          <UploadHandler
-            onDicomdir={dicomdir => {
-              this.setDicomdir(dicomdir);
-            }}
-          />
-        )}
+        {this.state.hasDicomdir && <DicomViewer dicomdir={this.dicomdir} />}
+
+        <UploadHandler
+          showPrompt={!this.state.hasDicomdir}
+          onDicomdir={dicomdir => {
+            this.setDicomdir(dicomdir);
+          }}
+        />
       </div>
     );
   }
