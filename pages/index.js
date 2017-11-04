@@ -16,7 +16,17 @@ export default class Index extends React.Component {
   render() {
     return (
       <div>
-        Welcome to the viewer
+        <style jsx global>{`
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+              "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+              "Helvetica Neue", sans-serif;
+            margin: 0;
+          }
+          * {
+            box-sizing: border-box;
+          }
+        `}</style>
         {this.state.hasDicomdir ? (
           <DicomViewer dicomdir={this.dicomdir} />
         ) : (

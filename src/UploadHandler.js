@@ -114,13 +114,31 @@ export default class UploadHandler extends React.Component {
             left: 0;
             right: 0;
             margin: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border 0.2s, background-color 0.2s;
+            background-color: ${this.state.isHovering
+              ? "#fafdff"
+              : "transparent"};
             border: ${this.state.isHovering
-              ? "2px dashed rgba(0, 0, 0, 0.3)"
-              : "0 none"};
+              ? "2px dashed #cde"
+              : "2px dashed rgba(0, 0, 0, 0.3)"};
+            border-radius: 10px;
+          }
+          span {
+            font-size: 24px;
+            color: #ccc;
           }
         `}</style>
         <div className="droparea">
-          {this.state.isHovering ? "Drop anywhere!" : ""}
+          <span>
+            {this.state.isHovering ? (
+              "Drop anywhere!"
+            ) : (
+              "Drag the whole contents of a DICOM CD here"
+            )}
+          </span>
         </div>
       </div>
     );

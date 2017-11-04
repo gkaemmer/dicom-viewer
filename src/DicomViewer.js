@@ -1,24 +1,7 @@
 import React, { Component } from "react";
 import throttle from "lodash/throttle";
-import * as dicomParser from "dicom-parser";
-import * as cornerstone from "cornerstone-core";
-import * as cornerstoneTools from "cornerstone-tools";
-import * as wadoImageLoader from "cornerstone-wado-image-loader";
-import $ from "jquery";
-window.$ = $;
-
-try {
-  wadoImageLoader.webWorkerManager.initialize({
-    webWorkerPath: "/static/cornerstoneWADOImageLoaderWebWorker.min.js",
-    taskConfiguration: {
-      decodeTask: {
-        codecsPath: "/static/cornerstoneWADOImageLoaderCodecs.min.js"
-      }
-    }
-  });
-} catch (e) {
-  // Already initialized
-}
+import DicomCanvas from "./DicomCanvas";
+import DicomSeriesPreview from "./DicomSeriesPreview";
 
 export default class DicomViewer extends Component {
   state = {
@@ -35,42 +18,6 @@ export default class DicomViewer extends Component {
     { trailing: false }
   );
 
-  toImageId(image) {
-    if (!image._fileLoaderIndex) {
-      const file = this.props.dicomdir.filesById[image.id];
-      const index = wadoImageLoader.wadouri.fileManager.add(file);
-      image._fileLoaderIndex = index;
-    }
-    return image._fileLoaderIndex;
-  }
-
-  loadImage() {
-    if (this.images.length === 0) return;
-    const imageIndex = this.state.imageIndex;
-    const imageId = this.toImageId(this.images[imageIndex]);
-    this.setState({ isLoading: true });
-
-    try {
-      cornerstone.loadImage(imageId).then(
-        image => {
-          if (!this.isInitialized) this.initCornerstone();
-          const viewport = cornerstone.getDefaultViewportForImage(
-            this.div,
-            image
-          );
-          // Only display image if it is the last one to be loaded
-          if (this.state.imageIndex === imageIndex) {
-            cornerstone.displayImage(this.div, image, viewport);
-            this.setState({ isLoading: false });
-          }
-        },
-        e => console.error("Something wicked happened", e)
-      );
-    } catch (e) {
-      console.error("Caught ze error", e);
-    }
-  }
-
   handleWheel = e => {
     e.preventDefault();
     if (!this.isInitialized) return;
@@ -79,36 +26,16 @@ export default class DicomViewer extends Component {
 
   nextImage() {
     if (this.state.imageIndex >= this.images.length - 1) return;
-    this.setState({ imageIndex: this.state.imageIndex + 1 }, () => {
-      this.loadImage();
-    });
+    this.setState({ imageIndex: this.state.imageIndex + 1 });
   }
 
   prevImage() {
     if (this.state.imageIndex < 1) return;
-    this.setState({ imageIndex: this.state.imageIndex - 1 }, () => {
-      this.loadImage();
-    });
+    this.setState({ imageIndex: this.state.imageIndex - 1 });
   }
 
   setSeries(index) {
-    this.setState({ seriesIndex: index, imageIndex: 0 }, () => {
-      this.loadImage();
-    });
-  }
-
-  initCornerstone() {
-    cornerstone.enable(this.div);
-    cornerstoneTools.mouseInput.enable(this.div);
-    cornerstoneTools.mouseWheelInput.enable(this.div);
-    cornerstoneTools.wwwc.activate(this.div, 1); // ww/wc is the default tool for left mouse button
-    cornerstoneTools.pan.activate(this.div, 2); // pan is the default tool for middle mouse button
-    cornerstoneTools.zoom.activate(this.div, 4); // zoom is the default tool for right mouse button
-    this.isInitialized = true;
-  }
-
-  componentDidMount() {
-    this.loadImage();
+    this.setState({ seriesIndex: index, imageIndex: 0 });
   }
 
   get images() {
@@ -119,17 +46,58 @@ export default class DicomViewer extends Component {
     return this.props.dicomdir.series[this.state.seriesIndex];
   }
 
+  componentWillMount() {
+    // Size the viewer properly
+    this.setState({ height: window.innerHeight - 100 });
+  }
+
   render() {
     return (
-      <div>
-        {this.props.dicomdir.series.map((series, i) => (
-          <div onClick={() => this.setSeries(i)}>Series {i + 1}</div>
-        ))}
-        <div
-          ref={div => (this.div = div)}
-          style={{ width: 300, height: 300 }}
-          onWheel={this.handleWheel}
-        />
+      <div className="container">
+        <style jsx>{`
+          .container {
+            background-color: black;
+          }
+
+          .series-previews {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: horizontal;
+          }
+
+          .canvas-container {
+            height: ${this.state.height}px;
+            display: flex;
+            flex-direction: vertical;
+          }
+
+          .canvas-container > div {
+            flex: 1;
+            width: 100%;
+          }
+        `}</style>
+        <div className="series-previews">
+          {this.props.dicomdir.series.map((series, i) => (
+            <DicomSeriesPreview
+              key={i}
+              dicomdir={this.props.dicomdir}
+              seriesIndex={i}
+              onClick={() => this.setSeries(i)}
+              isSelected={this.state.seriesIndex === i}
+            />
+          ))}
+        </div>
+        <div className="canvas-container">
+          <DicomCanvas
+            dicomdir={this.props.dicomdir}
+            imageIndex={this.state.imageIndex}
+            seriesIndex={this.state.seriesIndex}
+            onWheel={this.handleWheel}
+            height={this.state.height}
+            onInitialized={() => (this.isInitialized = true)}
+          />
+        </div>
       </div>
     );
   }
