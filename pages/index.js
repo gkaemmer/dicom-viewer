@@ -1,5 +1,6 @@
 import UploadHandler from "../src/UploadHandler";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 
 const DicomViewer = dynamic(import("../src/DicomViewer"));
 
@@ -16,6 +17,9 @@ export default class Index extends React.Component {
   render() {
     return (
       <div>
+        <Head>
+          <title>Online DICOM CD Viewer</title>
+        </Head>
         <style jsx global>{`
           body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
