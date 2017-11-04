@@ -126,7 +126,7 @@ export default class UploadHandler extends React.Component {
           }
           span {
             font-size: 24px;
-            color: #ccc;
+            color: #aaa;
           }
         `}</style>
         {(this.props.showPrompt || this.state.isHovering) && (
@@ -135,7 +135,14 @@ export default class UploadHandler extends React.Component {
               {this.state.isHovering ? (
                 "Drop anywhere!"
               ) : (
-                "Drag the whole contents of a DICOM CD here"
+                <div style={{ textAlign: "center" }}>
+                  Drag the whole contents of a DICOM CD here
+                  <br />
+                  <small style={{ fontSize: "14px" }}>
+                    (Nothing will be uploaded--all processing happens on your
+                    computer)
+                  </small>
+                </div>
               )}
             </span>
           </div>
