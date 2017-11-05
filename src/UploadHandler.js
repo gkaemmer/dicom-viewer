@@ -97,6 +97,7 @@ export default class UploadHandler extends React.Component {
 
       dicomdir = await fromFileTree(filesByName, dicomdirFile, dicompath);
     } catch (e) {
+      console.error(e);
       if (this.props.onError) this.props.onError(e);
     }
 
